@@ -53,6 +53,7 @@ public class JSBMLWriter implements TreeModelListener{
 	public int level;
 	public int version;
 	public Map<Integer, SBMLMetabolite> mapping;
+	public Map<String,Compartment> compartments;
 	
 	
 	/**
@@ -99,6 +100,7 @@ public class JSBMLWriter implements TreeModelListener{
 		curConfig = config;
 		
 		databaseName = config.getDatabaseName();
+		
 				
 		sourceType = "SBML";
 		
@@ -163,8 +165,8 @@ public class JSBMLWriter implements TreeModelListener{
 			System.out.println(spec.getId());
 		}*/
 		
-		Compartment compartment = model.createCompartment("default");
-		compartment.setSize(1d);
+		//Compartment compartment = model.createCompartment("default");
+		//compartment.setSize(1d);
 		
 		// C
 		// Create a model history object and add author information to it.
@@ -228,10 +230,18 @@ public class JSBMLWriter implements TreeModelListener{
 			System.out.print("Currently of size: ");
 			System.out.print(length);
 			System.out.print("\n");
-			
+			compartments = new HashMap();
 			for (int i=1; i <= length; i++) {
 				SBMLMetabolite curMeta = (SBMLMetabolite) mFactory.getMetaboliteById(i, sourceType, databaseName);
 				//System.out.println(curMeta);
+				
+				String comp = curMeta.getCompartment();
+				
+				if (!compartments.containsKey(comp)) {
+					Compartment temp = model.createCompartment(comp);
+					compartments.put(comp,temp);
+				}
+				
 				this.allMetabolites.add(curMeta);
 				mapping.put(i, curMeta);
 				
@@ -257,9 +267,17 @@ public class JSBMLWriter implements TreeModelListener{
 			Vector<Species> curSpecies;
 			
 			int count = 0;
+			
+			
+			
+			String comp;
+			Compartment curComp;
 			for (SBMLMetabolite cur : allMetabolites) {
+				comp = cur.getCompartment();
 				
-				Compartment compartment = model.createCompartment(cur.getCompartment());
+				
+				
+				Compartment compartment = compartments.get(comp);
 				String bound = cur.getBoundary();
 				String mAbrv = cur.getMetaboliteAbbreviation();
 				String mName = cur.getMetaboliteName();

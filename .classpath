@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="lib/TableLayout.jar"/>
 	<classpathentry kind="lib" path="lib/swingx-all-1.6.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="V:/gurobi501/win64/lib/gurobi.jar"/>
+	<classpathentry kind="lib" path="C:/gurobi501/win64/lib/gurobi.jar"/>
 	<classpathentry kind="lib" path="lib/jsbml-0.8-b1-with-dependencies.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -383,6 +383,7 @@ public class SBMLModelReader {
 							if (reactions.get(j).getKineticLaw().getListOfLocalParameters().get(k).getId().matches("FLUX_VALUE")) {
 								fluxValue = reactions.get(j).getKineticLaw().getLocalParameter("FLUX_VALUE").getValue();			
 							}
+							
 						}	    	
 					} 
 
