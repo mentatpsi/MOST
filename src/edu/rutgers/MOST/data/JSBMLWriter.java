@@ -107,19 +107,19 @@ public class JSBMLWriter implements TreeModelListener{
 		//config.setLoadedDatabase(ConfigConstants.DEFAULT_DATABASE_NAME);
 		System.out.println(config.getDatabaseName());
 		
-		setOutFile();
+		if (setOutFile()) {
 		
-		curConfig = config;
-		
-		databaseName = config.getDatabaseName();
-		
-				
-		sourceType = "SBML";
-		
-		if (sourceType == "SBML") {
-			this.create();
+			curConfig = config;
+			
+			databaseName = config.getDatabaseName();
+			
+					
+			sourceType = "SBML";
+			
+			if (sourceType == "SBML") {
+				this.create();
+			}
 		}
-				
 		
 		//Connection con = DriverManager.getConnection("jdbc:sqlite:" + config.getDatabaseName() + ".db");
 		//System.out.print(con.getSchema());
@@ -137,16 +137,23 @@ public class JSBMLWriter implements TreeModelListener{
 	}
 	
 	
-	public void setOutFile() {
+	public boolean setOutFile(){
 		JTextArea output = null;
 		JFileChooser chooser = new JFileChooser();
-		int option = chooser.showOpenDialog(output);  
+		chooser.setApproveButtonText("Save");
+		chooser.setDialogTitle("Save to");
+		
+		int option = chooser.showOpenDialog(output); 
+		
 		if(option == JFileChooser.APPROVE_OPTION){  
 			if(chooser.getSelectedFile()!=null)	{  
 				File theFileToSave = chooser.getSelectedFile();
 				this.setOutFile(theFileToSave);
+				return true;
 			}
+			
 		}
+		return false;
 	}
 	
 	
