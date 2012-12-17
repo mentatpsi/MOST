@@ -37,6 +37,8 @@ import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.Unit.Kind;
 import org.sbml.jsbml.UnitDefinition;
+import org.sbml.jsbml.xml.XMLAttributes;
+import org.sbml.jsbml.xml.XMLNamespaces;
 import org.sbml.jsbml.xml.XMLNode;
 
 
@@ -52,8 +54,10 @@ public class JSBMLWriter implements TreeModelListener{
 	public SReactions allReacts;
 	public int level;
 	public int version;
-	public Map<Integer, SBMLMetabolite> mapping;
+	public Map<Integer, SBMLMetabolite> metabolitesMap;
+	public Map<String, Species> speciesMap;
 	public Map<String,Compartment> compartments;
+	public Map<String,SpeciesReference> speciesRefMap;
 	
 	
 	/**
@@ -114,11 +118,18 @@ public class JSBMLWriter implements TreeModelListener{
 	}
 	
 	public JSBMLWriter() {
-		mapping = new HashMap();
+		metabolitesMap = new HashMap();
+		speciesMap = new HashMap();
+		speciesRefMap = new HashMap();
+	}
+	
+	public void metaMap() {
+		
+		
 	}
 	
 	public void create() throws Exception {
-		level = 2;
+		level = 3;
 		version = 1;
 		SBMLDocument doc = new SBMLDocument(level, version);
 		
@@ -135,24 +146,36 @@ public class JSBMLWriter implements TreeModelListener{
 		
 		Unit mole = new Unit();
 		mole.setKind(Kind.MOLE);
+		mole.setLevel(level);
 		mole.setScale(-3);
+		mole.setVersion(version);
 		
 		Unit gram = new Unit();
 		gram.setKind(Kind.GRAM);
+		gram.setLevel(level);
+		gram.setVersion(version);
+		//gram.setLevel(3);
 		gram.setExponent(-1);
 		
 		Unit second = new Unit();
 		second.setKind(Kind.SECOND);
+		second.setLevel(level);
+		second.setMultiplier(.00027777);
+		second.setVersion(version);
+		
+		//second.setVersion(version);
 		//second.setMultiplier(.00027777);
 		second.setExponent(-1);
 		
 		mmolgh.setName("mmol_per_gDW_per_hr");
+		mmolgh.setId("mmol_per_gDW_per_hr");
+		mmolgh.setLevel(level);
+		mmolgh.setVersion(version);
 		
 		mmolgh.addUnit(mole);
 		mmolgh.addUnit(gram);
 		mmolgh.addUnit(second);
-		mmolgh.setLevel(level);
-		mmolgh.setVersion(version);
+		
 		
 		model.addUnitDefinition(mmolgh);
 		
@@ -222,9 +245,8 @@ public class JSBMLWriter implements TreeModelListener{
 		}
 		
 		public void parseAllMetabolites() {
-			MetaboliteFactory mFactory = new MetaboliteFactory();
+			MetaboliteFactory mFactory = new MetaboliteFactory(sourceType, databaseName);
 			int length = mFactory.maximumId(databaseName);
-			
 			//mFactory.getMetaboliteById(metaboliteId, sourceType, databaseName);
 			
 			System.out.print("Currently of size: ");
@@ -242,8 +264,8 @@ public class JSBMLWriter implements TreeModelListener{
 					compartments.put(comp,temp);
 				}
 				
-				this.allMetabolites.add(curMeta);
-				mapping.put(i, curMeta);
+				this.allMetabolites.add(curMeta);	
+				metabolitesMap.put(i, curMeta);
 				
 			}
 			
@@ -281,15 +303,30 @@ public class JSBMLWriter implements TreeModelListener{
 				String bound = cur.getBoundary();
 				String mAbrv = cur.getMetaboliteAbbreviation();
 				String mName = cur.getMetaboliteName();
-				//int charge = Integer.getInteger(cur.getCharge());
-				
+				if (null != cur) { 
+					//int charge = Integer.getInteger(cur.getCharge());
+				}
 				
 				
 				Species curSpec = model.createSpecies(mAbrv, compartment);
-				curSpec.setName(mName);
+				curSpec.setId(mAbrv);
+				if (null != mName) {
+					curSpec.setName(mName);
+				}
+				//curSpec.setCharge(charge);
+				if (null != bound) {
+					curSpec.setBoundaryCondition(Boolean.getBoolean(bound));
+				}
 				//curSpec.setCharge(charge);
 				
 				allSpecies.add(curSpec);
+				speciesMap.put(mName, curSpec);
+				System.out.println(mName);
+				//SpeciesReference curSpecRef = new SpeciesReference(); //TODO: figure spec ref
+				
+				//curSpecRef.setSpecies(curSpec);
+				//curSpecRef.setId(mName);
+				//speciesRefMap.put(mName, curSpecRef);
 			}
 			
 		}
@@ -308,13 +345,13 @@ public class JSBMLWriter implements TreeModelListener{
 		}
 		
 		public void parseAllReactions() {
-			ReactionFactory rFactory = new ReactionFactory();
+			ReactionFactory rFactory = new ReactionFactory(sourceType, databaseName);
 			
-			int length = rFactory.getAllReactions(sourceType, databaseName).size();
+			int length = rFactory.getAllReactions().size();
 			
 			
 			for (int i = 1 ; i<= length; i++) {
-				SBMLReaction curReact = (SBMLReaction) rFactory.getReactionById(i, sourceType, databaseName);
+				SBMLReaction curReact = (SBMLReaction) rFactory.getReactionById(i);
 				//System.out.println(curReact);
 				allReactions.add(curReact);
 			}
@@ -341,11 +378,81 @@ public class JSBMLWriter implements TreeModelListener{
 			
 			int count = 0;
 			System.out.println();
-			model.addNamespace("html");
-			model.addNamespace("html:p");
-			MetaboliteFactory mFactory = new MetaboliteFactory();
-			ReactantFactory reFactory = new ReactantFactory();
-			ProductFactory prFactory = new ProductFactory();
+			//model.addNamespace("html");
+			//model.addNamespace("html:p");
+			MetaboliteFactory mFactory = new MetaboliteFactory(sourceType, databaseName);
+			ReactantFactory reFactory = new ReactantFactory(sourceType, databaseName);
+			ProductFactory prFactory = new ProductFactory(sourceType, databaseName);
+			
+			Parameter lParam = new Parameter();
+			lParam.setId("LOWER_BOUND");
+			
+			
+			Parameter uParam = new Parameter();
+			uParam.setId("UPPER_BOUND");
+			
+			
+			Parameter oParam = new Parameter();
+			oParam.setId("OBJECTIVE_COEFFICIENT");
+			
+			
+			Parameter fParam = new Parameter();
+			fParam.setId("FLUX_VALUE");
+			
+			
+			Parameter rParam = new Parameter();
+			rParam.setId("REDUCED_COST");
+			
+			
+			/*LocalParameter lParaml = new LocalParameter("LOWER_BOUND");
+			LocalParameter uParaml = new LocalParameter("UPPER_BOUND");
+			LocalParameter oParaml = new LocalParameter("OBJECTIVE_COEFFICIENT");
+			LocalParameter fParaml = new LocalParameter("FLUX_VALUE");
+			LocalParameter rParaml = new LocalParameter("REDUCED_COST");
+			*/
+			
+			//The following handles the 1 to 1 relation of instance variables to values 
+			Map<Integer, Map<String, LocalParameter>> allparams = new HashMap();
+			
+			String lowerStr = "LOWER_BOUND";
+			String upperStr = "UPPER_BOUND";
+			String objStr = "OBJECTIVE_COEFFICIENT";
+			String fluxStr = "FLUX_VALUE";
+			String redStr = "REDUCED_COST";
+			
+			String unitStr = "mmol_per_gDW_per_hr";
+			UnitDefinition uD = model.getUnitDefinition(unitStr);
+			
+			for (int i =0 ; i < allReactions.size(); i++) {
+				
+				
+				LocalParameter lParaml = new LocalParameter(lowerStr);
+				LocalParameter uParaml = new LocalParameter(upperStr);
+				LocalParameter oParaml = new LocalParameter(objStr);
+				LocalParameter fParaml = new LocalParameter(fluxStr);
+				LocalParameter rParaml = new LocalParameter(redStr);
+				
+				Map<String, LocalParameter> curParams = new HashMap();
+				lParaml.setUnits(uD);
+				uParaml.setUnits(uD);
+				fParaml.setUnits(uD);
+				
+				curParams.put(lowerStr, lParaml);
+				curParams.put(upperStr, uParaml);
+				curParams.put(objStr, oParaml);
+				curParams.put(fluxStr, fParaml);
+				curParams.put(redStr, rParaml);
+				
+				
+				allparams.put(i, curParams);
+				
+			}
+			
+			
+			
+			ASTNode math = new ASTNode();
+			//math.setName("FLUX_VALUE");
+			int curReacCount = 0;
 			
 			for (SBMLReaction cur : allReactions) {
 				
@@ -364,39 +471,80 @@ public class JSBMLWriter implements TreeModelListener{
 				//ArrayList<SBMLProduct> curProducts = cur.getProductsList();
 				//System.out.println("Products [Size]: " + String.valueOf(curProducts.size()));
 				
+				KineticLaw law = new KineticLaw();
 				
+				//Determine values
 				Boolean reversible = Boolean.valueOf(cur.getReversible());
-				String lowerBound = String.valueOf(cur.getLowerBound()); 
-				String upperBound = String.valueOf(cur.getUpperBound()); 
-				String objectCoeff = String.valueOf(cur.getBiologicalObjective());
-				String fluxValue = String.valueOf(cur.getFluxValue()); 
-				String reducCost = "0.000000"; //TODO Find proper value
+				Double lowerBound = cur.getLowerBound(); 
+				Double upperBound = cur.getUpperBound(); 
+				Double objectCoeff = cur.getBiologicalObjective();
+				Double fluxValue = cur.getFluxValue(); 
+				Double reducCost = 0.000000; //TODO Find proper value
+				
+				//Get Local Parameters
+				Map<String, LocalParameter> curParam = allparams.get(curReacCount);
+				curParam.get(lowerStr).setValue(lowerBound);
+				curParam.get(upperStr).setValue(upperBound);
+				curParam.get(objStr).setValue(objectCoeff);
+				curParam.get(fluxStr).setValue(fluxValue);
+				curParam.get(redStr).setValue(reducCost);
+				
+				//Set to current Kinetic law
+				law.addLocalParameter(curParam.get(lowerStr));
+				law.addLocalParameter(curParam.get(upperStr));
+				law.addLocalParameter(curParam.get(objStr));
+				law.addLocalParameter(curParam.get(fluxStr));
+				law.addLocalParameter(curParam.get(redStr));
+				
+				curReacCount++; // For all intensive purposes, variable only used for acquiring KineticLaws
+								// Therein, can be incremented prior to completion of Reaction information.
+				
+				//ArrayList<Parameter> parameters= new ArrayList();
+				 
+				
+				
+				//Parameter lbound = new Parameter();
+				/*LocalParameter curlParam = lParaml.clone();
+				curlParam.setUnits(uD);
+				curlParam.setValue(lowerBound);
+				
+				lParam.setUnits(unitStr);
+				lParam.setValue(String.valueOf(lowerBound));
+				//cur
+				law.addLocalParameter(curlParam);
+				//law.addLocalParameter(curlParam);
+				*/
 				
 				
 				
+				/*
+				//Parameter ubound = new Parameter();
+				LocalParameter curuParam = uParaml.clone();
+				curuParam.setUnits(uD);
+				curuParam.setValue(upperBound);
+				//law.addLocalParameter(curuParam);
 				
-				ArrayList<Parameter> parameters= new ArrayList();
-				
-				Parameter lbound = new Parameter();
-				lbound.setId("LOWER_BOUND");
-				lbound.setValue(lowerBound);
-				lbound.setUnits("mmol_per_gDW_per_hr");
-				parameters.add(lbound);
-				
-				
-				Parameter ubound = new Parameter();
-				ubound.setId("UPPER_BOUND");
-				ubound.setValue(upperBound);
-				ubound.setUnits("mmol_per_gDW_per_hr");
-				parameters.add(ubound);
+				curuParam.setValue(objectCoeff);
+				//law.addLocalParameter(curuParam);
 				
 				
-				Parameter objCoeff = new Parameter();
-				objCoeff.setId("OBJECTIVE_COEFFICIENT");
-				objCoeff.setValue(objectCoeff);
-				parameters.add(objCoeff);
+				LocalParameter curfParam = fParaml.clone();
+				curfParam.setUnits(uD);
+				//fParam.setUnits(unitStr);
+				curfParam.setValue(fluxValue);
+				//law.addLocalParameter(curfParam);
+				
+				curfParam.setValue(reducCost);
+				*/
+				
+				//law.addLocalParameter(curfParam);
+				
+				//law.addDeclaredNamespace("FLUX_VALUE", "http://www.w3.org/1998/Math/MathML");
+				
+				
+				//Parameter ubound = new Parameter();
 								
-				
+				/*
 				Parameter fluxVal = new Parameter();
 				fluxVal.setId("FLUX_VALUE");
 				fluxVal.setValue(fluxValue);
@@ -407,7 +555,7 @@ public class JSBMLWriter implements TreeModelListener{
 				redCost.setValue(reducCost);
 				redCost.setId("REDUCED_COST");
 				parameters.add(redCost);
-				
+				*/
 				
 				Reaction curReact = model.createReaction(id);
 				curReact.setName(name);
@@ -418,11 +566,20 @@ public class JSBMLWriter implements TreeModelListener{
 				String subSystem = cur.getMeta3();
 				String proteinClass = cur.getMeta4();
 				
-				
-				
-				
 				XMLNode gAssoc = new XMLNode();
 				XMLNode pAssoc = new XMLNode();
+				XMLAttributes gAssocA = new XMLAttributes();
+				gAssocA.add("GENE_ASSOCIATION:", geneAssoc);
+				//XMLNamespaces nSpace = new XMLNameSpaces();
+				//nSpace.add(uri, prefix)
+				//gAssoc.setNamespaces("html:p");
+				
+				gAssoc.setAttributes(gAssocA);
+				
+				curReact.setNotes(gAssoc);
+				
+				
+				
 				
 				
 				//node.clearAttributes();
@@ -445,31 +602,42 @@ public class JSBMLWriter implements TreeModelListener{
 				
 				
 				
-				ArrayList<ModelReactant> curReactants = reFactory.getReactantsByReactionId(cur.getId(), sourceType, databaseName);
+				ArrayList<ModelReactant> curReactants = reFactory.getReactantsByReactionId(cur.getId());
 				
-				ArrayList<ModelProduct> curProducts = prFactory.getProductsByReactionId(cur.getId(), sourceType, databaseName);
+				ArrayList<ModelProduct> curProducts = prFactory.getProductsByReactionId(cur.getId());
 				
 				for (ModelReactant curReactant : curReactants) {
-					SpeciesReference curSpec = new SpeciesReference();
+					SpeciesReference curSpec = new SpeciesReference(); //TODO: Figure spec
 					SBMLReactant curR = (SBMLReactant) curReactant;
 					
 					int inId = curR.getMetaboliteId();
 					SBMLMetabolite sMReactant = (SBMLMetabolite) mFactory.getMetaboliteById(inId, sourceType, databaseName);
-					
 					String reactAbbrv = sMReactant.getMetaboliteAbbreviation();
+					//System.out.println(reactAbbrv);
+					//SpeciesReference curSpec = speciesRefMap.get(reactAbbrv);
+					
+					curSpec.setSpecies(reactAbbrv); 
+					//curSpec.setName(reactAbbrv);
 										
-					curSpec.setId(reactAbbrv);
+					//curSpec.setId(reactAbbrv);
 					curSpec.setStoichiometry(curR.getStoic());
 					
 					curSpec.setLevel(level);
 					curSpec.setVersion(version);
+					//curReact.setLevel(level);
+					//curReact.setVersion(version);
+					
 					curReact.addReactant(curSpec);
 				}
 				
 				for (ModelProduct curProduct : curProducts) {
 					SpeciesReference curSpec = new SpeciesReference();
 					SBMLProduct curP = (SBMLProduct) curProduct;
-					curSpec.setId(curP.getMetaboliteAbbreviation());
+					String mAbbrv = curP.getMetaboliteAbbreviation();
+					//SpeciesReference curSpec = speciesRefMap.get(mAbbrv);
+					curSpec.setSpecies(mAbbrv);
+					
+					//curSpec.setName(mAbbrv);
 					curSpec.setStoichiometry(curP.getStoic());
 					curSpec.setLevel(level);
 					curSpec.setVersion(version);
@@ -480,6 +648,8 @@ public class JSBMLWriter implements TreeModelListener{
 				//curReact.addNamespace("html:p");
 				//curReact.appendNotes(attr);
 				
+				law.setMath(math);
+				curReact.setKineticLaw(law);
 				
 				//curReact.setNotes(attr.toString());
 				
@@ -491,18 +661,17 @@ public class JSBMLWriter implements TreeModelListener{
 				
 				//"http://www.w3.org/1998/Math/MathML"
 				
-				KineticLaw law = new KineticLaw();
 				
 				
 				
 				
+				/*
 				
 				for (Parameter param : parameters) {
 					String curId = param.getId();
 					String value = param.getValue();
 					String units = param.getUnits();
 					
-					LocalParameter lParam = new LocalParameter(curId);
 					
 					
 					lParam.setId(curId);
@@ -515,14 +684,15 @@ public class JSBMLWriter implements TreeModelListener{
 						lParam.setUnits(units);
 					}
 					
-					law.addLocalParameter(lParam);
+					//law.addLocalParameter(lParam);
 				}
+				*/
 				
 				//ASTNode mathml = new ASTNode();
 				
 				//law.setMath(math)addNamespace("http://www.w3.org/1998/Math/MathML");
 								
-				curReact.setKineticLaw(law);
+				//curReact.setKineticLaw(law);
 			}
 			
 		}
