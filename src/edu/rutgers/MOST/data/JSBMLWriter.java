@@ -65,6 +65,7 @@ public class JSBMLWriter implements TreeModelListener{
 	public Map<String,Compartment> compartments;
 	public Map<String,SpeciesReference> speciesRefMap;
 	public File outFile;
+	public SettingsFactory curSettings;
 	
 	/**
 	 * @param args
@@ -106,7 +107,7 @@ public class JSBMLWriter implements TreeModelListener{
 	public void formConnect(LocalConfig config) throws Exception{
 		//config.setLoadedDatabase(ConfigConstants.DEFAULT_DATABASE_NAME);
 		System.out.println(config.getDatabaseName());
-		
+		curSettings = new SettingsFactory();
 		if (setOutFile()) {
 		
 			curConfig = config;
@@ -139,7 +140,12 @@ public class JSBMLWriter implements TreeModelListener{
 	
 	public boolean setOutFile(){
 		JTextArea output = null;
+		String lastSaveSBML_path = curSettings.get("LastSaveSBML");
+		if (lastSaveSBML_path == null) {
+			lastSaveSBML_path = ".";
+		}
 		JFileChooser chooser = new JFileChooser();
+		chooser.setCurrentDirectory(new File(lastSaveSBML_path));
 		chooser.setApproveButtonText("Save");
 		chooser.setDialogTitle("Save to");
 		
@@ -149,6 +155,8 @@ public class JSBMLWriter implements TreeModelListener{
 			if(chooser.getSelectedFile()!=null)	{  
 				File theFileToSave = chooser.getSelectedFile();
 				this.setOutFile(theFileToSave);
+				String rawPathName = chooser.getSelectedFile().getAbsolutePath();
+				curSettings.add("LastSaveSBML", rawPathName);
 				return true;
 			}
 			
@@ -521,63 +529,11 @@ public class JSBMLWriter implements TreeModelListener{
 				curReacCount++; // For all intents and purposes, variable only used for acquiring KineticLaws
 								// Therein, can be incremented prior to completion of Reaction information.	
 				
-				//ArrayList<Parameter> parameters= new ArrayList();
-				 
 				
-				
-				//Parameter lbound = new Parameter();
-				/*LocalParameter curlParam = lParaml.clone();
-				curlParam.setUnits(uD);
-				curlParam.setValue(lowerBound);
-				
-				lParam.setUnits(unitStr);
-				lParam.setValue(String.valueOf(lowerBound));
-				//cur
-				law.addLocalParameter(curlParam);
-				//law.addLocalParameter(curlParam);
-				*/
-				
-				
-				
-				/*
-				//Parameter ubound = new Parameter();
-				LocalParameter curuParam = uParaml.clone();
-				curuParam.setUnits(uD);
-				curuParam.setValue(upperBound);
-				//law.addLocalParameter(curuParam);
-				
-				curuParam.setValue(objectCoeff);
-				//law.addLocalParameter(curuParam);
-				
-				
-				LocalParameter curfParam = fParaml.clone();
-				curfParam.setUnits(uD);
-				//fParam.setUnits(unitStr);
-				curfParam.setValue(fluxValue);
-				//law.addLocalParameter(curfParam);
-				
-				curfParam.setValue(reducCost);
-				*/
-				
-				//law.addLocalParameter(curfParam);
 				
 				//law.addDeclaredNamespace("FLUX_VALUE", "http://www.w3.org/1998/Math/MathML");
 				
-				
-				//Parameter ubound = new Parameter();
 								
-				/*
-				Parameter fluxVal = new Parameter();
-				fluxVal.setId("FLUX_VALUE");
-				fluxVal.setValue(fluxValue);
-				fluxVal.setUnits("mmol_per_gDW_per_hr");
-				parameters.add(fluxVal);
-				
-				Parameter redCost = new Parameter();
-				redCost.setValue(reducCost);
-				redCost.setId("REDUCED_COST");
-				parameters.add(redCost);
-				*/
 				
 				Reaction curReact = model.createReaction(id);
 				curReact.setName(name);
