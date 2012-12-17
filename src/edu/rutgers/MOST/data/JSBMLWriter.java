@@ -1,12 +1,18 @@
 package edu.rutgers.MOST.data;
 
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
+
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.filechooser.*;
 
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -58,7 +64,7 @@ public class JSBMLWriter implements TreeModelListener{
 	public Map<String, Species> speciesMap;
 	public Map<String,Compartment> compartments;
 	public Map<String,SpeciesReference> speciesRefMap;
-	
+	public File outFile;
 	
 	/**
 	 * @param args
@@ -94,12 +100,14 @@ public class JSBMLWriter implements TreeModelListener{
 	
 	public void setConfig(LocalConfig conf) {
 		this.curConfig = conf;
+		
 	}
 	
 	public void formConnect(LocalConfig config) throws Exception{
 		//config.setLoadedDatabase(ConfigConstants.DEFAULT_DATABASE_NAME);
 		System.out.println(config.getDatabaseName());
 		
+		setOutFile();
 		
 		curConfig = config;
 		
@@ -128,9 +136,29 @@ public class JSBMLWriter implements TreeModelListener{
 		
 	}
 	
+	
+	public void setOutFile() {
+		JTextArea output = null;
+		JFileChooser chooser = new JFileChooser();
+		int option = chooser.showOpenDialog(output);  
+		if(option == JFileChooser.APPROVE_OPTION){  
+			if(chooser.getSelectedFile()!=null)	{  
+				File theFileToSave = chooser.getSelectedFile();
+				this.setOutFile(theFileToSave);
+			}
+		}
+	}
+	
+	
+	public void setOutFile(File toFile) {
+		outFile = toFile;
+	}
 	public void create() throws Exception {
 		level = 3;
 		version = 1;
+		
+		
+		
 		SBMLDocument doc = new SBMLDocument(level, version);
 		
 	    //doc.addNamespace("html", "xmlns","http://www.w3.org/1999/xhtml");
@@ -141,7 +169,7 @@ public class JSBMLWriter implements TreeModelListener{
 		
 		
 		// Create a new SBML model, and add a compartment to it.
-		Model model = doc.createModel(databaseName + "1");
+		Model model = doc.createModel(databaseName.replace("_	", "") + "1");
 		UnitDefinition mmolgh = new UnitDefinition();
 		
 		Unit mole = new Unit();
@@ -217,8 +245,14 @@ public class JSBMLWriter implements TreeModelListener{
 		SBMLWriter sbmlwrite = new SBMLWriter();
 		
 		
-		sbmlwrite.write(doc, "test.xml", "MOST", "1.0");
-		System.out.println("Successfully outputted to test.xml");
+		if (null == outFile) {
+			sbmlwrite.write(doc, "test.xml", "MOST", "1.0");
+		}
+		else {
+			sbmlwrite.write(doc, outFile, "MOST", "1.0");
+		}
+		
+		System.out.println("Successfully outputted to " + outFile);
 	}
 	
 	public class SMetabolites {
