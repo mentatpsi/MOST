@@ -425,24 +425,7 @@ public class JSBMLWriter implements TreeModelListener{
 			ReactantFactory reFactory = new ReactantFactory(sourceType, databaseName);
 			ProductFactory prFactory = new ProductFactory(sourceType, databaseName);
 			
-			Parameter lParam = new Parameter();
-			lParam.setId("LOWER_BOUND");
 			
-			
-			Parameter uParam = new Parameter();
-			uParam.setId("UPPER_BOUND");
-			
-			
-			Parameter oParam = new Parameter();
-			oParam.setId("OBJECTIVE_COEFFICIENT");
-			
-			
-			Parameter fParam = new Parameter();
-			fParam.setId("FLUX_VALUE");
-			
-			
-			Parameter rParam = new Parameter();
-			rParam.setId("REDUCED_COST");
 			
 			
 			/*LocalParameter lParaml = new LocalParameter("LOWER_BOUND");
@@ -465,8 +448,6 @@ public class JSBMLWriter implements TreeModelListener{
 			UnitDefinition uD = model.getUnitDefinition(unitStr);
 			
 			for (int i =0 ; i < allReactions.size(); i++) {
-				
-				
 				LocalParameter lParaml = new LocalParameter(lowerStr);
 				LocalParameter uParaml = new LocalParameter(upperStr);
 				LocalParameter oParaml = new LocalParameter(objStr);
@@ -537,7 +518,7 @@ public class JSBMLWriter implements TreeModelListener{
 				law.addLocalParameter(curParam.get(fluxStr));
 				law.addLocalParameter(curParam.get(redStr));
 				
-				curReacCount++; // For all intensive purposes, variable only used for acquiring KineticLaws
+				curReacCount++; // For all intents and purposes, variable only used for acquiring KineticLaws
 								// Therein, can be incremented prior to completion of Reaction information.	
 				
 				//ArrayList<Parameter> parameters= new ArrayList();
@@ -806,73 +787,4 @@ public class JSBMLWriter implements TreeModelListener{
 		}
 	}
 	
-	
-	public class Parameter{
-		/*Class for easy implementation of Parameter node under listofParameters
-		 * 
-		 * Example:
-		 * <parameter id="LOWER_BOUND" value="-999999.000000" units="mmol_per_gDW_per_hr"/>
-		 * */
-		public String id;
-		public String value;
-		public String units;
-		
-		public String getId() {
-			return id;
-		}
-		
-		public String getValue() {
-			return value;
-		}
-		
-		public String getUnits() {
-			return units;
-		}
-		
-		public void setId(String id) {
-			this.id = id;
-		}
-		
-		public void setValue(String value) {
-			this.value = value;
-		}
-		
-		public void setUnits(String units) {
-			this.units = units;
-		}
-		
-		public String[] getKeys() {
-			String keys[];
-			if (this.units != null) {
-				keys = new String[3];
-				keys[0] = "id";
-				keys[1] = "value";
-				keys[2] = "units";
-			}
-			else {
-				keys = new String[2];
-				keys[0] = "id";
-				keys[1] = "value";
-			}
-			return keys;
-			
-		}
-		
-		public String[] getValues() {
-			String[] atr;
-			if (this.units != null) {
-				atr = new String[3];
-				atr[0] = this.id;
-				atr[1] = this.value;
-				atr[2] = this.units;
-			}
-			else {
-				atr = new String[2];
-				atr[0] = this.id;
-				atr[1] = this.value;
-			}
-					
-			return atr;
-		}
-	}
 }
