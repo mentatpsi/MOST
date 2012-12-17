@@ -497,7 +497,7 @@ public class JSBMLWriter implements TreeModelListener{
 				law.addLocalParameter(curParam.get(redStr));
 				
 				curReacCount++; // For all intensive purposes, variable only used for acquiring KineticLaws
-								// Therein, can be incremented prior to completion of Reaction information.
+								// Therein, can be incremented prior to completion of Reaction information.	
 				
 				//ArrayList<Parameter> parameters= new ArrayList();
 				 
@@ -576,7 +576,7 @@ public class JSBMLWriter implements TreeModelListener{
 				
 				gAssoc.setAttributes(gAssocA);
 				
-				curReact.setNotes(gAssoc);
+				//curReact.setNotes(gAssoc);
 				
 				
 				
