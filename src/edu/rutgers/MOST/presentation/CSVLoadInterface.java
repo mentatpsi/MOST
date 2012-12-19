@@ -25,6 +25,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import edu.rutgers.MOST.config.LocalConfig;
+import edu.rutgers.MOST.data.SettingsFactory;
 import edu.rutgers.MOST.presentation.GraphicalInterface.Task;
 
 public class CSVLoadInterface  extends JDialog {
@@ -36,8 +37,15 @@ public class CSVLoadInterface  extends JDialog {
 	public static JButton cancelButton = new JButton("  Cancel  ");
 	public static final JTextField textMetabField = new JTextField();
 	public static final JTextField textReacField = new JTextField();
+	public SettingsFactory curSettings;
 
 	public CSVLoadInterface() {
+		try {
+			curSettings = new SettingsFactory();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		setTitle(GraphicalInterfaceConstants.CSV_FILE_LOAD_INTERFACE_TITLE);		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -138,6 +146,13 @@ public class CSVLoadInterface  extends JDialog {
 			public void actionPerformed(ActionEvent prodActionEvent) {
 				JTextArea output = null;
 				JFileChooser fileChooser = new JFileChooser(); 
+				
+				String LastCSVM_path = curSettings.get("LastCSVM");
+				if (LastCSVM_path == null) {
+					LastCSVM_path = ".";
+				}
+				fileChooser.setCurrentDirectory(new File(LastCSVM_path));
+				
 				//... Open a file dialog.
 				int retval = fileChooser.showOpenDialog(output);
 				if (retval == JFileChooser.APPROVE_OPTION) {
@@ -145,6 +160,11 @@ public class CSVLoadInterface  extends JDialog {
 					File file = fileChooser.getSelectedFile();
 					String rawFilename = fileChooser.getSelectedFile().getName();
 					String filename = rawFilename.substring(0, rawFilename.length() - 4);      	
+					String rawPathName = fileChooser.getSelectedFile().getAbsolutePath();
+					
+					//Set up Last CSVM
+					curSettings.add("LastCSVM",rawPathName);
+					
 					String path = fileChooser.getSelectedFile().getPath();
 					if (!path.endsWith(".csv")) {
 						JOptionPane.showMessageDialog(null,                
@@ -165,12 +185,24 @@ public class CSVLoadInterface  extends JDialog {
 			public void actionPerformed(ActionEvent prodActionEvent) {
 				JTextArea output = null;
 				JFileChooser fileChooser = new JFileChooser(); 
+				
+				String LastCSVR_path = curSettings.get("LastCSVR");
+				if (LastCSVR_path == null) {
+					LastCSVR_path = ".";
+				}
+				fileChooser.setCurrentDirectory(new File(LastCSVR_path));
+				
 				//... Open a file dialog.
 				int retval = fileChooser.showOpenDialog(output);
 				if (retval == JFileChooser.APPROVE_OPTION) {
 					//... The user selected a file, get it, use it.          	
 					File file = fileChooser.getSelectedFile();
 					String path = fileChooser.getSelectedFile().getPath();
+					String rawPathName = fileChooser.getSelectedFile().getAbsolutePath();
+					
+					//Set up Last CSVM
+					curSettings.add("LastCSVR",rawPathName);
+					
 					if (!path.endsWith(".csv")) {
 						JOptionPane.showMessageDialog(null,                
 								"Not a Valid CSV File.",                

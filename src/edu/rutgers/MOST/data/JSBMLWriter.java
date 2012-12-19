@@ -184,7 +184,16 @@ public class JSBMLWriter implements TreeModelListener{
 		
 		
 		// Create a new SBML model, and add a compartment to it.
-		Model model = doc.createModel(databaseName.replace("_	", "") + "1");
+		System.out.println(databaseName);
+		String dbN = databaseName.replace("Model", "");
+		
+
+		dbN = dbN.replace(" ", "");
+		
+		//Replace the following:
+		dbN = "someModel";
+		
+		Model model = doc.createModel(dbN + "1");
 		UnitDefinition mmolgh = new UnitDefinition();
 		
 		Unit mole = new Unit();
