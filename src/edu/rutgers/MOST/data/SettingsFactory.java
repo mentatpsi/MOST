@@ -30,7 +30,7 @@ public class SettingsFactory {
 	public Map<String, String> mappings;
 	public String filename;
 	
-	public SettingsFactory(String filename) throws Exception {
+	public SettingsFactory(String filename) {
 		mappings = new HashMap<String, String>();
 		this.filename = filename;
 		this.read();
@@ -149,7 +149,7 @@ public class SettingsFactory {
 		}
 	}
 	
-	public void read() throws Exception {
+	public void read() {
 		XMLInputFactory factory = XMLInputFactory.newInstance();
 		try {
 			FileReader fileReader = new FileReader(this.filename);
@@ -192,6 +192,9 @@ public class SettingsFactory {
 			}
 		} catch (FileNotFoundException e ) {
 			return;
+		} catch (XMLStreamException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}	
 	}
 	

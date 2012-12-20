@@ -104,7 +104,7 @@ public class JSBMLWriter implements TreeModelListener{
 		
 	}
 	
-	public void formConnect(LocalConfig config) throws Exception{
+	public void formConnect(LocalConfig config) throws Exception {
 		//config.setLoadedDatabase(ConfigConstants.DEFAULT_DATABASE_NAME);
 		System.out.println(config.getDatabaseName());
 		curSettings = new SettingsFactory();
@@ -141,6 +141,7 @@ public class JSBMLWriter implements TreeModelListener{
 	public boolean setOutFile(){
 		JTextArea output = null;
 		String lastSaveSBML_path = curSettings.get("LastSaveSBML");
+		
 		if (lastSaveSBML_path == null) {
 			lastSaveSBML_path = ".";
 		}
@@ -190,7 +191,7 @@ public class JSBMLWriter implements TreeModelListener{
 
 		dbN = dbN.replace(" ", "");
 		
-		//Replace the following:
+		//Replace the following with something proper (see issue # ):
 		dbN = "someModel";
 		
 		Model model = doc.createModel(dbN + "1");
@@ -342,6 +343,13 @@ public class JSBMLWriter implements TreeModelListener{
 			return match;	
 		}
 		
+		public String makeValidID(String mAbrv) {
+			mAbrv = mAbrv.replace("[","");
+			mAbrv = mAbrv.replace("]","");
+			mAbrv = "m" + mAbrv;
+			return mAbrv;
+			
+		}
 		
 		public void devModel() {
 			Vector<Species> curSpecies;
@@ -360,12 +368,15 @@ public class JSBMLWriter implements TreeModelListener{
 				Compartment compartment = compartments.get(comp);
 				String bound = cur.getBoundary();
 				String mAbrv = cur.getMetaboliteAbbreviation();
+				
+				mAbrv = this.makeValidID(mAbrv);
+				
 				String mName = cur.getMetaboliteName();
 				if (null != cur) { 
 					//int charge = Integer.getInteger(cur.getCharge());
 				}
 				
-				
+				try {
 				Species curSpec = model.createSpecies(mAbrv, compartment);
 				curSpec.setId(mAbrv);
 				if (null != mName) {
@@ -379,7 +390,14 @@ public class JSBMLWriter implements TreeModelListener{
 				
 				allSpecies.add(curSpec);
 				speciesMap.put(mName, curSpec);
-				System.out.println(mName);
+				//System.out.println(mName);
+				
+				}
+				catch (Exception e) {
+					System.out.println("Error: " + e.getMessage());
+					System.out.println(mAbrv + " couldn't be added to model");
+				}
+				
 				//SpeciesReference curSpecRef = new SpeciesReference(); //TODO: figure spec ref
 				
 				//curSpecRef.setSpecies(curSpec);
@@ -535,9 +553,7 @@ public class JSBMLWriter implements TreeModelListener{
 				law.addLocalParameter(curParam.get(fluxStr));
 				law.addLocalParameter(curParam.get(redStr));
 				
-				curReacCount++; // For all intents and purposes, variable only used for acquiring KineticLaws
-								// Therein, can be incremented prior to completion of Reaction information.	
-				
+								
 				
 				
 				//law.addDeclaredNamespace("FLUX_VALUE", "http://www.w3.org/1998/Math/MathML");
@@ -581,55 +597,67 @@ public class JSBMLWriter implements TreeModelListener{
 				
 				Notes attr = new Notes(cur);
 				
-				
-				
-				for (String note : attr.getNotes()) {
-					
-				}
-				
-				
-				
+								
 				ArrayList<ModelReactant> curReactants = reFactory.getReactantsByReactionId(cur.getId());
 				
 				ArrayList<ModelProduct> curProducts = prFactory.getProductsByReactionId(cur.getId());
 				
 				for (ModelReactant curReactant : curReactants) {
-					SpeciesReference curSpec = new SpeciesReference(); //TODO: Figure spec
-					SBMLReactant curR = (SBMLReactant) curReactant;
-					
-					int inId = curR.getMetaboliteId();
-					SBMLMetabolite sMReactant = (SBMLMetabolite) mFactory.getMetaboliteById(inId, sourceType, databaseName);
-					String reactAbbrv = sMReactant.getMetaboliteAbbreviation();
-					//System.out.println(reactAbbrv);
-					//SpeciesReference curSpec = speciesRefMap.get(reactAbbrv);
-					
-					curSpec.setSpecies(reactAbbrv); 
-					//curSpec.setName(reactAbbrv);
-										
-					//curSpec.setId(reactAbbrv);
-					curSpec.setStoichiometry(curR.getStoic());
-					
-					curSpec.setLevel(level);
-					curSpec.setVersion(version);
-					//curReact.setLevel(level);
-					//curReact.setVersion(version);
-					
-					curReact.addReactant(curSpec);
+					try {
+						SpeciesReference curSpec = new SpeciesReference(); //TODO: Figure spec
+						SBMLReactant curR = (SBMLReactant) curReactant;
+						
+						int inId = curR.getMetaboliteId();
+						SBMLMetabolite sMReactant = (SBMLMetabolite) mFactory.getMetaboliteById(inId, sourceType, databaseName);
+						String reactAbbrv = sMReactant.getMetaboliteAbbreviation();
+						//System.out.println(reactAbbrv);
+						//SpeciesReference curSpec = speciesRefMap.get(reactAbbrv);
+						reactAbbrv = reactAbbrv.replace("[","");
+						reactAbbrv = reactAbbrv.replace("]","");
+						reactAbbrv = "m" + reactAbbrv;
+						
+						//reactAbbrv = makeValidID(reactAbbrv);
+						curSpec.setSpecies(reactAbbrv); 
+						//curSpec.setName(reactAbbrv);
+											
+						//curSpec.setId(reactAbbrv);
+						curSpec.setStoichiometry(curR.getStoic());
+						
+						curSpec.setLevel(level);
+						curSpec.setVersion(version);
+						//curReact.setLevel(level);
+						//curReact.setVersion(version);
+						
+						curReact.addReactant(curSpec);
+					}
+					catch (Exception e) {
+						System.out.println("Error: " + e.getMessage());
+						
+					}
 				}
 				
 				for (ModelProduct curProduct : curProducts) {
-					SpeciesReference curSpec = new SpeciesReference();
-					SBMLProduct curP = (SBMLProduct) curProduct;
-					String mAbbrv = curP.getMetaboliteAbbreviation();
-					//SpeciesReference curSpec = speciesRefMap.get(mAbbrv);
-					curSpec.setSpecies(mAbbrv);
-					
-					//curSpec.setName(mAbbrv);
-					curSpec.setStoichiometry(curP.getStoic());
-					curSpec.setLevel(level);
-					curSpec.setVersion(version);
-					
-					curReact.addProduct(curSpec);
+					try {
+						SpeciesReference curSpec = new SpeciesReference();
+						SBMLProduct curP = (SBMLProduct) curProduct;
+						String mAbbrv = curP.getMetaboliteAbbreviation();
+						//SpeciesReference curSpec = speciesRefMap.get(mAbbrv);
+						mAbbrv = mAbbrv.replace("[","");
+						mAbbrv = mAbbrv.replace("]","");
+						mAbbrv = "m" + mAbbrv;
+						
+						curSpec.setSpecies(mAbbrv);
+						
+						//curSpec.setName(mAbbrv);
+						curSpec.setStoichiometry(curP.getStoic());
+						curSpec.setLevel(level);
+						curSpec.setVersion(version);
+						
+						curReact.addProduct(curSpec);
+					}
+					catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
 				}
 				
 				//curReact.addNamespace("html:p");
@@ -638,6 +666,8 @@ public class JSBMLWriter implements TreeModelListener{
 				law.setMath(math);
 				curReact.setKineticLaw(law);
 				
+				curReacCount++;
+
 				//curReact.setNotes(attr.toString());
 				
 				
