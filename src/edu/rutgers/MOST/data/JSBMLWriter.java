@@ -396,6 +396,7 @@ public class JSBMLWriter implements TreeModelListener{
 				catch (Exception e) {
 					System.out.println("Error: " + e.getMessage());
 					System.out.println(mAbrv + " couldn't be added to model");
+					System.out.println();
 				}
 				
 				//SpeciesReference curSpecRef = new SpeciesReference(); //TODO: figure spec ref
@@ -657,6 +658,7 @@ public class JSBMLWriter implements TreeModelListener{
 					}
 					catch (Exception e) {
 						System.out.println(e.getMessage());
+					
 					}
 				}
 				
