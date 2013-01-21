@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.Compartment;
@@ -343,10 +345,28 @@ public class JSBMLWriter implements TreeModelListener{
 			return match;	
 		}
 		
+		public boolean isNoNumberAtBeginning(String s){
+		    return s.matches("^[^\\d].*");
+		  }
+		
+		public boolean isValidID(String mAbrv) {
+			if (!isNoNumberAtBeginning(mAbrv)) {
+			    return false; //prints /{item}/
+			} 
+			
+			if (mAbrv.startsWith("[")) {
+				return false;
+			}
+			
+			return true;
+		}
+		
 		public String makeValidID(String mAbrv) {
-			mAbrv = mAbrv.replace("[","");
-			mAbrv = mAbrv.replace("]","");
-			mAbrv = "m" + mAbrv;
+			if (!isValidID(mAbrv)) {
+				mAbrv = mAbrv.replace("[","");
+				mAbrv = mAbrv.replace("]","");
+				mAbrv = "m_" + mAbrv;
+			}
 			return mAbrv;
 			
 		}
