@@ -24,10 +24,9 @@ import javax.swing.event.DocumentListener;
 
 import edu.rutgers.MOST.config.LocalConfig;
 import edu.rutgers.MOST.data.MetabolitesMetaColumnManager;
+import edu.rutgers.MOST.data.ReactionsMetaColumnManager;
 
 public class MetaboliteColAddRenameInterface  extends JDialog {
-
-	public JTextField columnNameField = new JTextField();
 
 	public static JButton okButton = new JButton("    OK    ");
 	public static JButton cancelButton = new JButton("  Cancel  ");
@@ -37,6 +36,8 @@ public class MetaboliteColAddRenameInterface  extends JDialog {
 	throws SQLException {
 
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		getRootPane().setDefaultButton(okButton);
 
 		//box layout
 		Box vb = Box.createVerticalBox();
@@ -108,15 +109,40 @@ public class MetaboliteColAddRenameInterface  extends JDialog {
 		add(vb);	
 
 		ActionListener cancelButtonActionListener = new ActionListener() {
-			public void actionPerformed(ActionEvent prodActionEvent) {
-				setVisible(false);
-				dispose();				
+			public void actionPerformed(ActionEvent ae) {
+				//setVisible(false);
+				//dispose();				
 			}
 		};
 
 		cancelButton.addActionListener(cancelButtonActionListener);
 	} 	 
 
+	public boolean isColumnDuplicate(String databaseName) {
+		String columnName = textField.getText();
+		MetabolitesMetaColumnManager manager = new MetabolitesMetaColumnManager();
+		int columnIndex = -1;
+		boolean duplicate = false;
+		for (int i = 0; i < GraphicalInterfaceConstants.METABOLITES_COLUMN_NAMES.length; i++) {
+			if (GraphicalInterfaceConstants.METABOLITES_COLUMN_NAMES[i].equals(columnName)) {
+				duplicate = true;
+				columnIndex = i;
+			}
+		}
+		for (int j = 0; j < manager.getColumnNames(databaseName).size(); j++) {
+			if (manager.getColumnNames(databaseName).get(j).equals(columnName)) {
+				duplicate = true;
+				columnIndex = GraphicalInterfaceConstants.METABOLITES_COLUMN_NAMES.length + j;
+			}
+		}
+		if (columnIndex > -1) {
+			if (LocalConfig.getInstance().getHiddenMetabolitesColumns().contains(columnIndex)) {
+				duplicate = false;
+			}
+		}
+		return duplicate;
+	}
+	
 	public void addColumnToMeta(String databaseName){
 		String columnName = textField.getText();
 		MetabolitesMetaColumnManager manager = new MetabolitesMetaColumnManager();

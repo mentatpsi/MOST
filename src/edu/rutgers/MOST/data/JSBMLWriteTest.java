@@ -12,7 +12,7 @@ public class JSBMLWriteTest {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 		//LocalConfig.getInstance().getLoadedDatabase()
-		JSBMLWriter1 jsWrite = new JSBMLWriter1();
+		JSBMLWriter jsWrite = new JSBMLWriter();
 		
 		//TODO: Likely won't work without GraphicalInterface implemented, and a database running
 		//TODO: Implement in GraphicalInterface
@@ -20,7 +20,7 @@ public class JSBMLWriteTest {
 	}
 	
 	public void connect(LocalConfig config) throws Exception {
-		JSBMLWriter1 jsWrite = new JSBMLWriter1();
+		JSBMLWriter jsWrite = new JSBMLWriter();
 		jsWrite.formConnect(config);
 	}
 

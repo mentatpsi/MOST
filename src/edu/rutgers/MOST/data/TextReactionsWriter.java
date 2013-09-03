@@ -11,6 +11,7 @@ import edu.rutgers.MOST.presentation.GraphicalInterfaceConstants;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
+//TODO: account for hidden columns
 public class TextReactionsWriter {
 
 	public void write(String file, String databaseName) {
@@ -53,11 +54,14 @@ public class TextReactionsWriter {
 					String fluxValue = "0.0";
 					String reactionAbbreviation = " ";
 					String reactionName = " ";
-					String reactionString = " ";
+					String reactionEqunAbbr = " ";
+					String reactionEqunNames = " ";
 					String reversible = " ";
 					String lowerBound = "-999999";
 					String upperBound = "999999";
-					String objective = "0.0";
+					String biologicalObjective = "0.0";
+					String syntheticObjective = "0.0";
+					String geneAssociations = " ";
 					String meta1 = " ";
 					String meta2 = " ";
 					String meta3 = " ";
@@ -103,11 +107,18 @@ public class TextReactionsWriter {
 							reactionName = " ";
 						}
 					}
-					if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_STRING_COLUMN)!= null) {
-						if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_STRING_COLUMN).toString().length() > 0) {	
-							reactionString = (String) GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_STRING_COLUMN);
+					if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_EQUN_ABBR_COLUMN)!= null) {
+						if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_EQUN_ABBR_COLUMN).toString().length() > 0) {	
+							reactionEqunAbbr = (String) GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_EQUN_ABBR_COLUMN);
 						} else {
-							reactionString = " ";
+							reactionEqunAbbr = " ";
+						}
+					}
+					if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_EQUN_NAMES_COLUMN)!= null) {
+						if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_EQUN_NAMES_COLUMN).toString().length() > 0) {	
+							reactionEqunNames = (String) GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REACTION_EQUN_NAMES_COLUMN);
+						} else {
+							reactionEqunNames = " ";
 						}
 					}
 					if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.REVERSIBLE_COLUMN)!= null) {
@@ -133,9 +144,23 @@ public class TextReactionsWriter {
 					}
 					if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.BIOLOGICAL_OBJECTIVE_COLUMN)!= null) {
 						if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.BIOLOGICAL_OBJECTIVE_COLUMN).toString().length() > 0) {	
-							objective = (String) GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.BIOLOGICAL_OBJECTIVE_COLUMN);
+							biologicalObjective = (String) GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.BIOLOGICAL_OBJECTIVE_COLUMN);
 						} else {
-							objective = "0.0";
+							biologicalObjective = "0.0";
+						}
+					}
+					if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.SYNTHETIC_OBJECTIVE_COLUMN)!= null) {
+						if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.SYNTHETIC_OBJECTIVE_COLUMN).toString().length() > 0) {	
+							syntheticObjective = (String) GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.SYNTHETIC_OBJECTIVE_COLUMN);
+						} else {
+							syntheticObjective = "0.0";
+						}
+					}
+					if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.GENE_ASSOCIATIONS_COLUMN)!= null) {
+						if (GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.GENE_ASSOCIATIONS_COLUMN).toString().length() > 0) {	
+							geneAssociations = (String) GraphicalInterface.reactionsTable.getModel().getValueAt(viewRow, GraphicalInterfaceConstants.GENE_ASSOCIATIONS_COLUMN);
+						} else {
+							geneAssociations = " ";
 						}
 					}
 					
@@ -263,10 +288,10 @@ public class TextReactionsWriter {
 					}			
 					
 					if (metaString.length() > 0) {
-						String [] entries = (knockout + "#" + fluxValue + "#" + reactionAbbreviation + "#" + reactionName + "#" + reactionString + "#" + reversible + "#" + lowerBound + "#" + upperBound + "#" + objective + "#" + metaString.substring(0, metaString.length() - 1)).split("#");
+						String [] entries = (knockout + "#" + fluxValue + "#" + reactionAbbreviation + "#" + reactionName + "#" + reactionEqunAbbr + "#" + reactionEqunNames + "#" + reversible + "#" + lowerBound + "#" + upperBound + "#" + biologicalObjective + "#" + syntheticObjective + "#" + geneAssociations + "#" + metaString.substring(0, metaString.length() - 1)).split("#");
 						writer.writeNext(entries);
 					} else {
-						String [] entries = (knockout + "#" + fluxValue + "#" + reactionAbbreviation + "#" + reactionName + "#" + reactionString + "#" + reversible + "#" + lowerBound + "#" + upperBound + "#" + objective).split("#");
+						String [] entries = (knockout + "#" + fluxValue + "#" + reactionAbbreviation + "#" + reactionName + "#" + reactionEqunAbbr + "#" + reactionEqunNames + "#" + reversible + "#" + lowerBound + "#" + upperBound + "#" + biologicalObjective + "#" + syntheticObjective + "#" + geneAssociations).split("#");
 						writer.writeNext(entries);
 					}			
 				}	

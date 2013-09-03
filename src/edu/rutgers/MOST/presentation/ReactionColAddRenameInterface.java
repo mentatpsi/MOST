@@ -27,8 +27,6 @@ import edu.rutgers.MOST.data.ReactionsMetaColumnManager;
 
 public class ReactionColAddRenameInterface  extends JDialog {
 
-	public JTextField columnNameField = new JTextField();
-
 	public static JButton okButton = new JButton("    OK    ");
 	public static JButton cancelButton = new JButton("  Cancel  ");
 	public static final JTextField textField = new JTextField();
@@ -37,6 +35,8 @@ public class ReactionColAddRenameInterface  extends JDialog {
 	throws SQLException {
 
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		getRootPane().setDefaultButton(okButton);
 
 		//box layout
 		Box vb = Box.createVerticalBox();
@@ -62,7 +62,7 @@ public class ReactionColAddRenameInterface  extends JDialog {
 		topLabel.setMinimumSize(new Dimension(200, 15));
 		textField.setEditable(true);
 
-		okButton.setMnemonic(KeyEvent.VK_S);
+		okButton.setMnemonic(KeyEvent.VK_O);
 		okButton.setEnabled(false);
 		JLabel blank = new JLabel("    "); 
 		cancelButton.setMnemonic(KeyEvent.VK_C);
@@ -108,15 +108,40 @@ public class ReactionColAddRenameInterface  extends JDialog {
 		add(vb);	
 
 		ActionListener cancelButtonActionListener = new ActionListener() {
-			public void actionPerformed(ActionEvent prodActionEvent) {
-				setVisible(false);
-				dispose();				
+			public void actionPerformed(ActionEvent ae) {
+				//setVisible(false);
+				//dispose();				
 			}
 		};
 
 		cancelButton.addActionListener(cancelButtonActionListener);
 	} 	 
 
+	public boolean isColumnDuplicate(String databaseName) {
+		String columnName = textField.getText();
+		ReactionsMetaColumnManager manager = new ReactionsMetaColumnManager();
+		int columnIndex = -1;
+		boolean duplicate = false;
+		for (int i = 0; i < GraphicalInterfaceConstants.REACTIONS_COLUMN_NAMES.length; i++) {
+			if (GraphicalInterfaceConstants.REACTIONS_COLUMN_NAMES[i].equals(columnName)) {
+				duplicate = true;
+				columnIndex = i;
+			}
+		}
+		for (int j = 0; j < manager.getColumnNames(databaseName).size(); j++) {
+			if (manager.getColumnNames(databaseName).get(j).equals(columnName)) {
+				duplicate = true;
+				columnIndex = GraphicalInterfaceConstants.REACTIONS_COLUMN_NAMES.length + j;
+			}
+		}
+		if (columnIndex > -1) {
+			if (LocalConfig.getInstance().getHiddenReactionsColumns().contains(columnIndex)) {
+				duplicate = false;
+			}
+		}		
+		return duplicate;
+	}
+	
 	public void addColumnToMeta(String databaseName){
 		String columnName = textField.getText();
 		ReactionsMetaColumnManager manager = new ReactionsMetaColumnManager();

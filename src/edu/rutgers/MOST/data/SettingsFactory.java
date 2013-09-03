@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,16 +30,19 @@ import javax.xml.stream.events.XMLEvent;
 public class SettingsFactory {
 	public Map<String, String> mappings;
 	public String filename;
+	public GurobiStatus Gurobi;
 	
-	public SettingsFactory(String filename) {
+	public SettingsFactory(String filename) throws Exception {
 		mappings = new HashMap<String, String>();
 		this.filename = filename;
+		this.Gurobi = new GurobiStatus();
 		this.read();
 	}
 	
 	public SettingsFactory() throws Exception {
 		mappings = new HashMap<String, String>();
 		this.filename = "settings.xml";
+		this.Gurobi = new GurobiStatus();
 		this.read();
 	}
 	
@@ -64,6 +68,16 @@ public class SettingsFactory {
 		String value = aSetting.getValue();
 		this.add(key,value);	
 		
+	}
+	
+	public void restore() {
+		File cur = new File("settings.xml");
+		try {
+			this.read();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean exists(String dir) {
@@ -149,7 +163,7 @@ public class SettingsFactory {
 		}
 	}
 	
-	public void read() {
+	public void read() throws Exception {
 		XMLInputFactory factory = XMLInputFactory.newInstance();
 		try {
 			FileReader fileReader = new FileReader(this.filename);
@@ -163,20 +177,20 @@ public class SettingsFactory {
 					currentElementValue = element.getName().toString();
 
 
-					System.out.println("Start Element: " + element.getName());
+					//System.out.println("Start Element: " + element.getName());
 
 					Iterator iterator = element.getAttributes();
 					while (iterator.hasNext()) {
 						Attribute attribute = (Attribute) iterator.next();
 						QName name = attribute.getName();
 						String value = attribute.getValue();
-						System.out.println("Attribute name/value: " + name + "/" + value);
+						//System.out.println("Attribute name/value: " + name + "/" + value);
 					}
 				}
 
 				if (event.isEndElement()) {
 					EndElement element = (EndElement) event;
-					System.out.println("End element:" + element.getName());
+					//System.out.println("End element:" + element.getName());
 				}
 
 				if (event.isCharacters()) {
@@ -187,19 +201,17 @@ public class SettingsFactory {
 					}
 					currentElementValue = "";
 
-					System.out.println("Text: " + characters.getData());
+					//System.out.println("Text: " + characters.getData());
 				}
 			}
 		} catch (FileNotFoundException e ) {
 			return;
-		} catch (XMLStreamException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}	
 	}
 	
 	public String toString() {
 		return mappings.toString();
 	}
+	
 	
 }

@@ -3,14 +3,15 @@ package edu.rutgers.MOST.data;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map;
 import java.util.Vector;
 
 public class FBAModel {
 
-	private Vector<ModelReaction> reactions;
-	private Vector<ModelMetabolite> metabolites;
-	private Vector<Double> objective;
-	private ArrayList<Map<Integer, Double>> sMatrix;
+	protected Vector<ModelReaction> reactions;
+	protected Vector<ModelMetabolite> metabolites;
+	protected Vector<Double> objective;
+	protected ArrayList<Map<Integer, Double>> sMatrix;
 	
 	public FBAModel(String databaseName) {
 		ReactionFactory rFactory = new ReactionFactory("SBML", databaseName);

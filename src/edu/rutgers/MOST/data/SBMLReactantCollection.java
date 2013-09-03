@@ -125,10 +125,7 @@ public class SBMLReactantCollection implements ModelReactantCollection {
 	public String createConnectionStatement(String databaseName) {
 		return "jdbc:sqlite:" + getDatabaseName() + ".db";
 	}
-	
-	
-
-	
+		
 
 	public static void main(String[] args) {
 		ReactantFactory aReactantFactory = new ReactantFactory("SBML", "test_03182012");
@@ -137,7 +134,7 @@ public class SBMLReactantCollection implements ModelReactantCollection {
 		 
 		while(iterator.hasNext()){
 			SBMLReactant aReactant = (SBMLReactant)iterator.next();
-			System.out.print("\nabbr" + aReactant.toString());
+			//System.out.print("\nabbr" + aReactant.toString());
 		}
 	}
 

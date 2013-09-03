@@ -12,7 +12,7 @@ public class ReactionsMetaColumnManager {
 
 	public ArrayList<String> metaColumnNames;
 
-	public void setMetaColumnName(ArrayList metaColumnNames) {
+	public void setMetaColumnName(ArrayList<String> metaColumnNames) {
 		this.metaColumnNames = metaColumnNames;
 	}
 
@@ -106,6 +106,35 @@ public class ReactionsMetaColumnManager {
 
 	}
 	
+	public ArrayList<String> getColumnNames(String databaseName) {
+		ArrayList<String> columnNames = new ArrayList<String>();
+		String queryString = "jdbc:sqlite:" + databaseName + ".db";
+		try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Connection conn;
+		try {
+			conn = DriverManager.getConnection(queryString);
+			PreparedStatement prep1 = conn.prepareStatement("select meta_column_name from reactions_meta_info;");
+
+			ResultSet rs = prep1.executeQuery();
+			while (rs.next()) {
+				columnNames.add(rs.getString("meta_column_name"));
+			}
+
+			conn.close();
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();			
+		}
+		return columnNames;
+
+	}
+	
 	public void addColumnName(String databaseName, String columnName) {
 		String queryString = "jdbc:sqlite:" + databaseName + ".db";
 		try {
@@ -117,15 +146,15 @@ public class ReactionsMetaColumnManager {
 		Connection conn;
 		try {
 			conn = DriverManager.getConnection(queryString);
-				PreparedStatement prep1 = conn.prepareStatement("insert into reactions_meta_info (id, meta_column_name) values (?, ?);");
-				prep1.setInt(1, (getMetaColumnCount(databaseName) + 1));
-				prep1.setString(2, columnName);
+			PreparedStatement prep1 = conn.prepareStatement("insert into reactions_meta_info (id, meta_column_name) values (?, ?);");
+			prep1.setInt(1, (getMetaColumnCount(databaseName) + 1));
+			prep1.setString(2, columnName);
 
-				prep1.addBatch();
+			prep1.addBatch();
 
-				conn.setAutoCommit(false);
-				prep1.executeBatch();
-				conn.setAutoCommit(true);
+			conn.setAutoCommit(false);
+			prep1.executeBatch();
+			conn.setAutoCommit(true);
 
 			conn.close();
 
@@ -134,10 +163,10 @@ public class ReactionsMetaColumnManager {
 			e.printStackTrace();			
 		}
 	}
-	
+
 	public void changeColumnName(String databaseName, String columnName, int id) {
 		String queryString = "jdbc:sqlite:" + databaseName + ".db";
-		System.out.println("name " + columnName + "id " + id);
+		//System.out.println("name " + columnName + "id " + id);
 		try {
 			Class.forName("org.sqlite.JDBC");
 		} catch (ClassNotFoundException e) {
@@ -147,15 +176,15 @@ public class ReactionsMetaColumnManager {
 		Connection conn;
 		try {
 			conn = DriverManager.getConnection(queryString);
-				PreparedStatement prep1 = conn.prepareStatement("update reactions_meta_info set meta_column_name=? where id=?;");
-				prep1.setString(1, columnName);
-				prep1.setInt(2, id);
+			PreparedStatement prep1 = conn.prepareStatement("update reactions_meta_info set meta_column_name=? where id=?;");
+			prep1.setString(1, columnName);
+			prep1.setInt(2, id);
 
-				prep1.addBatch();
+			prep1.addBatch();
 
-				conn.setAutoCommit(false);
-				prep1.executeBatch();
-				conn.setAutoCommit(true);
+			conn.setAutoCommit(false);
+			prep1.executeBatch();
+			conn.setAutoCommit(true);
 
 			conn.close();
 

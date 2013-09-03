@@ -1,14 +1,13 @@
 package edu.rutgers.MOST.data;
 
+import edu.rutgers.MOST.config.LocalConfig;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Vector;
 import java.util.ArrayList;
-
-import edu.rutgers.MOST.config.LocalConfig;
+import java.util.Vector;
 
 public class MetaboliteFactory {
 	private String sourceType;
@@ -19,7 +18,7 @@ public class MetaboliteFactory {
 		this.databaseName = databaseName;
 	}
 	
-	public ModelMetabolite getMetaboliteById(Integer metaboliteId, String sourceType, String databaseName){
+	public ModelMetabolite getMetaboliteById(Integer metaboliteId){
 
 
 		if("SBML".equals(sourceType)){
@@ -31,13 +30,11 @@ public class MetaboliteFactory {
 		return new SBMLMetabolite(); //Default behavior.
 	}
 
-	public ArrayList<Integer> participatingReactions(String databaseName, String metaboliteAbbreviation) {
+	public ArrayList<Integer> participatingReactions(String metaboliteAbbreviation) {
 		int reactionId = 0;
 		ArrayList<Integer> participatingReactions = new ArrayList<Integer>();
-		System.out.println("id mf " + LocalConfig.getInstance().getMetaboliteIdNameMap());
 		if (metaboliteAbbreviation != null) {
 			int metabId = (Integer) LocalConfig.getInstance().getMetaboliteIdNameMap().get(metaboliteAbbreviation);
-			System.out.println(metabId);
 			
 			String queryString = "jdbc:sqlite:" + databaseName + ".db";
 			try {
@@ -78,10 +75,7 @@ public class MetaboliteFactory {
 				e.printStackTrace();			
 			}	
 		}
-		
-		
-		
-		System.out.println(participatingReactions);
+
 		return participatingReactions;
 	}
 
@@ -131,7 +125,7 @@ public class MetaboliteFactory {
 		return metabolites;
 	}
 	
-	public Integer metaboliteId(String databaseName, String metaboliteAbbreviation) {
+	public Integer metaboliteId(String metaboliteAbbreviation) {
 		Integer metaboliteId = 0;
 
 		String queryString = "jdbc:sqlite:" + databaseName + ".db";
@@ -158,10 +152,9 @@ public class MetaboliteFactory {
 		}	
 
 		return metaboliteId;
-
 	}
 	
-	public int maximumId(String databaseName) {
+	public int maximumId() {
 		int max = 0;
 		String queryString = "jdbc:sqlite:" + databaseName + ".db";
 		try {
@@ -183,6 +176,40 @@ public class MetaboliteFactory {
 			e.printStackTrace();			
 		}
 		return max;
+	}
+	
+	public ArrayList<String> metabolitesList() {
+		ArrayList<String> metabolitesList = new ArrayList<String>();
+		
+			try {
+				Class.forName("org.sqlite.JDBC");
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Connection conn;
+			try {
+				conn = DriverManager.getConnection("jdbc:sqlite:" + databaseName + ".db"); // TODO:
+				// Make
+				// this
+				// configurable
+				PreparedStatement prep = conn
+				.prepareStatement("select metabolite_abbreviation from metabolites where length(metabolite_abbreviation) > 0;");
+				conn.setAutoCommit(true);
+				ResultSet rs = prep.executeQuery();
+				while (rs.next()) {
+					String metaboliteAbbreviation = rs.getString("metabolite_abbreviation");
+
+					metabolitesList.add(metaboliteAbbreviation);
+				}
+				rs.close();
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		return metabolitesList;
 	}
 	
 	public static void main(String[] args) {
